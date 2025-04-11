@@ -65,7 +65,7 @@ class TestCollocatedEnforcement < Minitest::Test
       exception = e
     end
 
-    assert_includes exception.backtrace[0], "in `format_person_info'"
-    assert_includes exception.backtrace[1], "in `test_exception_backtrace_excludes_enforce_collocated_callers'"
+    assert_includes exception.backtrace[0], "test/foo_helper.rb:4:in 'FooHelper#format_person_info'"
+    assert_includes exception.backtrace[1], "test_exception_backtrace_excludes_enforce_collocated_callers"
   end
 end
