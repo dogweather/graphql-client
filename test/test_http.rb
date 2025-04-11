@@ -41,7 +41,7 @@ class TestHTTP < Minitest::Test
     assert_equal(expected, actual)
   end
 
-  def test_http_error_raises_exception_and_returns_error_response
+  def test_http_error_raises_exception
     response = Net::HTTPResponse.new("1.1", "404", "Not Found")
     response.instance_variable_set(:@body, "")
 
