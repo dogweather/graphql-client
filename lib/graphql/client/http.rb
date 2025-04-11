@@ -18,6 +18,49 @@ module GraphQL
     # adapter. This class exists for trivial stock usage and allows for minimal
     # request header configuration.
     class HTTP
+
+      # Base exception for HTTP-related errors.
+      class HTTPError < StandardError
+        attr_reader :response
+    
+        # The initializer takes both a message and the response so that any caller can inspect the details.
+        def initialize(message, response)
+          @response = response
+          super(message)
+        end
+      end
+    
+      # Exception for HTTP client errors (HTTP status codes 400-499).
+      class ClientError < HTTPError; end
+    
+      # Exception for HTTP server errors (HTTP status codes 500-599).
+      class ServerError < HTTPError; end
+    
+      # Checks the given Net::HTTPResponse.
+      # If it represents a client or server error, raises a corresponding exception.
+      def self.raise_for_http_error(response)
+        # Convert the code to an integer for comparisons
+        status = response.code.to_i
+    
+        # Return immediately if the response is a success (2xx)
+        return if status >= 200 && status < 300
+    
+        # Construct a message that includes useful debugging info.
+        error_message = "HTTP Error: #{response.code} #{response.message}. Response body: #{response.body}"
+    
+        # Determine whether it's a client or server error and raise the appropriate exception.
+        case status
+        when 400...500
+          raise ClientError.new(error_message, response)
+        when 500...600
+          raise ServerError.new(error_message, response)
+        else
+          # For any other HTTP status that does not fall within our usual bounds,
+          # you might choose to raise a generic HTTPError
+          raise HTTPError.new(error_message, response)
+        end
+      end
+
       # Public: Create HTTP adapter instance for a single GraphQL endpoint.
       #
       #   GraphQL::Client::HTTP.new("http://graphql-swapi.parseapp.com/") do
@@ -81,6 +124,7 @@ module GraphQL
         when Net::HTTPOK, Net::HTTPBadRequest
           JSON.parse(response.body)
         else
+          self.raise_for_http_error(response)
           { "errors" => [{ "message" => "#{response.code} #{response.message}" }] }
         end
       end
