@@ -125,7 +125,7 @@ module GraphQL
         when Net::HTTPOK, Net::HTTPBadRequest
           JSON.parse(response.body)
         else
-          raise_for_http_error(response, uri.request_uri)
+          raise_for_http_error(response, uri.to_s)
           { "errors" => [{ "message" => "#{response.code} #{response.message}" }] }
         end
       end
