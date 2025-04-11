@@ -22,33 +22,33 @@ module GraphQL
       # Base exception for HTTP-related errors.
       class HTTPError < StandardError
         attr_reader :response
-    
+
         # The initializer takes both a message and the response so that any caller can inspect the details.
         def initialize(message, response)
           @response = response
           super(message)
         end
       end
-    
+
       # Exception for HTTP client errors (HTTP status codes 400-499).
       class ClientError < HTTPError; end
-    
+
       # Exception for HTTP server errors (HTTP status codes 500-599).
       class ServerError < HTTPError; end
-    
+
       # Checks the given Net::HTTPResponse.
       # If it represents a client or server error, raises a corresponding exception.
       def raise_for_http_error(response, request_uri)
         # Convert the code to an integer for comparisons
         status = response.code.to_i
-    
+
         # Return immediately if the response is a success (2xx)
         return if status >= 200 && status < 300
-    
+
         # Construct a message that includes useful debugging info.
         error_message = "HTTP Error accessing #{request_uri}: #{response.code} #{response.message}."
         error_message += " Response body: #{response.body}" if !response.body.nil? && response.body != ''
-    
+
         # Determine whether it's a client or server error and raise the appropriate exception.
         case status
         when 400...500
@@ -125,7 +125,7 @@ module GraphQL
         when Net::HTTPOK, Net::HTTPBadRequest
           JSON.parse(response.body)
         else
-          raise_for_http_error(response, uri.to_s)
+          raise_for_http_error(response, uri)
           { "errors" => [{ "message" => "#{response.code} #{response.message}" }] }
         end
       end
