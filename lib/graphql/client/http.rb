@@ -38,7 +38,7 @@ module GraphQL
     
       # Checks the given Net::HTTPResponse.
       # If it represents a client or server error, raises a corresponding exception.
-      def self.raise_for_http_error(response)
+      def raise_for_http_error(response)
         # Convert the code to an integer for comparisons
         status = response.code.to_i
     
@@ -124,7 +124,7 @@ module GraphQL
         when Net::HTTPOK, Net::HTTPBadRequest
           JSON.parse(response.body)
         else
-          self.raise_for_http_error(response)
+          raise_for_http_error(response)
           { "errors" => [{ "message" => "#{response.code} #{response.message}" }] }
         end
       end
